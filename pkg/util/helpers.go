@@ -45,6 +45,21 @@ func (h *PhaseHelper) WriteFile(path, content string) error {
 	return os.WriteFile(fullPath, []byte(content), 0644)
 }
 
+// AppendFile appends content to a file inside the target system (creates if missing)
+func (h *PhaseHelper) AppendFile(path, content string) error {
+	fullPath := h.targetDir + path
+	if err := os.MkdirAll(filepath.Dir(fullPath), 0755); err != nil {
+		return err
+	}
+	f, err := os.OpenFile(fullPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	_, err = f.WriteString(content)
+	return err
+}
+
 // MkdirAll creates a directory in the target system
 func (h *PhaseHelper) MkdirAll(path string, perm os.FileMode) error {
 	fullPath := h.targetDir + path

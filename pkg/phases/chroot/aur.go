@@ -41,34 +41,56 @@ func (a *AURPhase) Execute(ctx *phase.Context) error {
 		ctx.Logger.Stage("Installing %d AUR packages", len(packages))
 		ctx.Logger.Debug("AUR packages: %s", strings.Join(packages, " "))
 
-		if err := h.InstallAURPackages(username, packages...); err != nil {
+		// Determine which packages are already installed so we only attempt missing ones
+		missing := []string{}
+		for _, pkg := range packages {
+			installed, instErr := h.IsPacmanPackageInstalled(pkg)
+			if instErr != nil {
+				ctx.Logger.Warn("failed to check if package %s is installed: %v", pkg, instErr)
+				missing = append(missing, pkg)
+				continue
+			}
+			if !installed {
+				missing = append(missing, pkg)
+			}
+		}
+
+		if len(missing) == 0 {
+			ctx.Logger.Success("All AUR packages already installed")
+			return nil
+		}
+
+		ctx.Logger.Stage("Installing %d missing AUR packages", len(missing))
+		ctx.Logger.Debug("AUR missing packages: %s", strings.Join(missing, " "))
+
+		if err := h.InstallAURPackages(username, missing...); err != nil {
 			ctx.Logger.Warn("Initial AUR install attempt failed: %v", err)
 
-			// Retry only packages that are not already installed
-			remaining := []string{}
-			for _, pkg := range packages {
+			// Retry only packages still missing after first pass
+			retry := []string{}
+			for _, pkg := range missing {
 				installed, instErr := h.IsPacmanPackageInstalled(pkg)
 				if instErr != nil {
 					ctx.Logger.Warn("failed to check if package %s is installed: %v", pkg, instErr)
-					remaining = append(remaining, pkg)
+					retry = append(retry, pkg)
 					continue
 				}
 				if !installed {
-					remaining = append(remaining, pkg)
+					retry = append(retry, pkg)
 				}
 			}
 
-			if len(remaining) > 0 {
-				ctx.Logger.Stage("Retrying AUR install for %d remaining packages", len(remaining))
-				ctx.Logger.Debug("AUR retry packages: %s", strings.Join(remaining, " "))
-				if err2 := h.InstallAURPackages(username, remaining...); err2 != nil {
+			if len(retry) > 0 {
+				ctx.Logger.Stage("Retrying AUR install for %d remaining packages", len(retry))
+				ctx.Logger.Debug("AUR retry packages: %s", strings.Join(retry, " "))
+				if err2 := h.InstallAURPackages(username, retry...); err2 != nil {
 					ctx.Logger.Warn("Retry failed: %v", err2)
 				}
 			}
 
-			// Report final failures but don't exit installation
+			// Determine final failures and log them
 			failed := []string{}
-			for _, pkg := range packages {
+			for _, pkg := range missing {
 				installed, instErr := h.IsPacmanPackageInstalled(pkg)
 				if instErr != nil {
 					ctx.Logger.Warn("failed to check if package %s is installed: %v", pkg, instErr)
@@ -81,17 +103,17 @@ func (a *AURPhase) Execute(ctx *phase.Context) error {
 			}
 
 			if len(failed) > 0 {
-				// Persist failures so users can inspect after installation
 				logContent := fmt.Sprintf("%s AUR build failures:\n%s\n", time.Now().Format(time.RFC3339), strings.Join(failed, "\n"))
-				if err := h.WriteFile("/tios-log.txt", logContent); err != nil {
+				if err := h.AppendFile("/tios-log.txt", logContent); err != nil {
 					ctx.Logger.Warn("failed to write AUR failure log: %v", err)
 				} else {
 					ctx.Logger.Warn("AUR build failures logged to /tios-log.txt")
 				}
 			}
-		} else {
-			ctx.Logger.Success("AUR packages installed")
+			return nil
 		}
+
+		ctx.Logger.Success("AUR packages installed")
 	}
 	
 	return nil
