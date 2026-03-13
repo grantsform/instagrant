@@ -38,7 +38,7 @@ func (t *TiosDirPhase) Execute(ctx *phase.Context) error {
 
 	// Clone tios repository
 	ctx.Logger.Info("Cloning tios repository...")
-	cloneCmd := fmt.Sprintf("git clone https://github.com/grantios/tios /tios/repo")
+	cloneCmd := fmt.Sprintf("git clone https://github.com/grantsform/grantios /tios/repo")
 	if err := exec.Chroot(ctx.TargetDir, cloneCmd); err != nil {
 		ctx.Logger.Warn("Failed to clone tios repository: %v", err)
 	}
