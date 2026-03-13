@@ -109,3 +109,13 @@ func (h *PhaseHelper) InstallAURPackages(username string, packages ...string) er
 	cmd := fmt.Sprintf("yay -S --noconfirm --needed %s", strings.Join(packages, " "))
 	return h.RunAsUser(username, cmd)
 }
+
+// IsPacmanPackageInstalled returns true if the package is installed in the chroot
+func (h *PhaseHelper) IsPacmanPackageInstalled(pkg string) (bool, error) {
+	_, err := h.exec.ChrootOutput(h.targetDir, fmt.Sprintf("pacman -Q %s", pkg))
+	if err != nil {
+		// pacman returns non-zero if package is not installed
+		return false, nil
+	}
+	return true, nil
+}
