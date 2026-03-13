@@ -371,10 +371,10 @@ func (c *Config) Validate() error {
 
 	// Validate desktop choice
 	validDesktops := map[string]bool{
-		"none": true, "plasma": true, "hyprland": true, "gnome": true,
+		"none": true, "plasma": true, "plasma-minimal": true, "hyprland": true, "gnome": true,
 	}
 	if !validDesktops[c.System.Desktop] {
-		return fmt.Errorf("invalid desktop: %s (valid: none, plasma, hyprland, gnome)", c.System.Desktop)
+		return fmt.Errorf("invalid desktop: %s (valid: none, plasma, plasma-minimal, hyprland, gnome)", c.System.Desktop)
 	}
 
 	// Validate kernel
@@ -451,7 +451,7 @@ func ListConfigs() []string {
 	}
 	
 	// Add remaining embedded configs in specific order
-	orderedConfigs := []string{"workstation", "devestation", "homeserver", "nextclouder", "mediacenter", "smartclock", "steamdeck"}
+	orderedConfigs := []string{"workstation", "ministation", "devestation", "homeserver", "nextclouder", "mediacenter", "smartclock", "steamdeck"}
 	for _, name := range orderedConfigs {
 		if embeddedConfigsList[name] {
 			result = append(result, name)

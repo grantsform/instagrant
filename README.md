@@ -93,7 +93,8 @@ skeleton: {
 ### Available Profiles
 
 - **default** - Base system with essential utilities
-- **workstation** - Full desktop with KDE Plasma
+- **workstation** - Full desktop with KDE Plasma (includes KDE applications)
+- **ministation** - Minimal KDE Plasma desktop (same as workstation but without KDE applications)
 - **homeserver** - Home server setup
 - **mediacenter** - Media center with auto-login
 - **steamdeck** - Steam Deck-style gaming setup

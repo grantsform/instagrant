@@ -24,9 +24,12 @@ func NewPackagesPhase() *PackagesPhase {
 func (p *PackagesPhase) Execute(ctx *phase.Context) error {
 	// Desktop package sets
 	desktopPkgs := map[string][]string{
-		"plasma":   {"plasma-meta", "kde-applications-meta", "sddm", "xorg"},
-		"hyprland": {"hyprland", "waybar", "wofi", "kitty", "sddm"},
-		"gnome":    {"gnome", "gnome-extra", "gdm"},
+		// Full KDE Plasma (includes applications)
+		"plasma":         {"plasma-meta", "kde-applications-meta", "sddm", "xorg"},
+		// Minimal KDE Plasma (core desktop without apps)
+		"plasma-minimal": {"plasma-meta", "sddm", "xorg"},
+		"hyprland":       {"hyprland", "waybar", "wofi", "kitty", "sddm"},
+		"gnome":          {"gnome", "gnome-extra", "gdm"},
 	}
 	
 	// GPU driver packages
