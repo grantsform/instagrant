@@ -1,0 +1,11 @@
+# Debug log
+debug.log
+
+# Local config files (templates created by user)
+/*.cue
+
+# Binary
+instagrant
+
+# Test artifacts
+.test/
